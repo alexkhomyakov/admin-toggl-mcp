@@ -1,0 +1,22 @@
+[project]
+name = "toggl-mcp-server"
+version = "0.1.0"
+description = "A Model Context Protocol server for Toggl time tracking"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp>=1.9.3",
+    "pydantic>=2.11.5",
+    "python-dateutil>=2.9.0.post0",
+]
+
+[project.scripts]
+toggl-mcp-server = "toggl_server.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/toggl_server"]
