@@ -4,11 +4,12 @@ A Model Context Protocol (MCP) server that provides tools for interacting with T
 
 ## Features
 
-This MCP server provides three main tools:
+This MCP server provides four main tools:
 
 1. **`start_tracking`** - Start tracking time for a new task
 2. **`stop_tracking`** - Stop the currently running time entry
 3. **`list_workspaces`** - List all available workspaces
+4. **`show_current_time_entry`** - Show the currently running time entry, if any
 
 ## Installation
 
@@ -83,6 +84,15 @@ stop_tracking
 ```
 list_workspaces
 ```
+
+### Show Current Time Entry
+```
+show_current_time_entry
+```
+
+This will display:
+- If tracking: Task description, entry ID, workspace, start time, running duration, tags, and project (if any)
+- If not tracking: A message indicating no time entry is currently running
 
 ## API Integration
 

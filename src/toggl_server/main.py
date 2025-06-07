@@ -6,6 +6,7 @@ A Model Context Protocol server that provides tools for interacting with Toggl t
 - start_tracking: Start a new time entry
 - stop_tracking: Stop the currently running time entry
 - list_workspaces: List all available workspaces
+- show_current_time_entry: Show the currently running time entry, if any
 """
 
 import asyncio
@@ -76,6 +77,15 @@ class LazyTogglMCPServer:
                         "additionalProperties": False,
                     },
                 ),
+                Tool(
+                    name="show_current_time_entry",
+                    description="Show the currently running time entry, if any",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": False,
+                    },
+                ),
             ]
 
         @self.server.call_tool()
@@ -90,6 +100,8 @@ class LazyTogglMCPServer:
                 return await self._handle_stop_tracking(arguments)
             elif name == "list_workspaces":
                 return await self._handle_list_workspaces(arguments)
+            elif name == "show_current_time_entry":
+                return await self._handle_show_current_time_entry(arguments)
             else:
                 raise ValueError(f"Unknown tool: {name}")
 
@@ -214,6 +226,57 @@ class LazyTogglMCPServer:
                 TextContent(
                     type="text",
                     text=f"❌ Error listing workspaces: {str(e)}",
+                )
+            ]
+
+    async def _handle_show_current_time_entry(self, arguments: Dict[str, Any]) -> List[TextContent]:
+        """Handle showing the current time entry."""
+        try:
+            # Get current running time entry
+            current_entry = await self.toggl_api.get_current_time_entry()
+            
+            if not current_entry:
+                return [
+                    TextContent(
+                        type="text",
+                        text="⏸️ No time entry is currently running",
+                    )
+                ]
+            
+            # Calculate running duration
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
+            running_seconds = int((now - current_entry.start).total_seconds())
+            duration_str = format_duration(running_seconds)
+            
+            # Format the current entry information
+            entry_info = f"✅ Currently tracking time entry\n"
+            entry_info += f"📝 Task: '{current_entry.description}'\n"
+            entry_info += f"🆔 Entry ID: {current_entry.id}\n"
+            entry_info += f"🏢 Workspace ID: {current_entry.workspace_id}\n"
+            entry_info += f"🕐 Started: {current_entry.start}\n"
+            entry_info += f"⏱️ Running for: {duration_str}"
+            
+            # Add tags if present
+            if current_entry.tags:
+                entry_info += f"\n🏷️ Tags: {', '.join(current_entry.tags)}"
+            
+            # Add project if present
+            if current_entry.project_id:
+                entry_info += f"\n📁 Project ID: {current_entry.project_id}"
+            
+            return [
+                TextContent(
+                    type="text",
+                    text=entry_info,
+                )
+            ]
+            
+        except Exception as e:
+            return [
+                TextContent(
+                    type="text",
+                    text=f"❌ Error getting current time entry: {str(e)}",
                 )
             ]
 
