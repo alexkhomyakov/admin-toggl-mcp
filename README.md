@@ -4,12 +4,48 @@ A Model Context Protocol (MCP) server that provides tools for interacting with T
 
 ## Features
 
-This MCP server provides four main tools:
+- Start/stop time tracking
+- Get current entry
+- List workspaces
 
-1. **`start_tracking`** - Start tracking time for a new task
-2. **`stop_tracking`** - Stop the currently running time entry
-3. **`list_workspaces`** - List all available workspaces
-4. **`show_current_time_entry`** - Show the currently running time entry, if any
+## API
+
+### Tools
+
+- **start_tracking**
+  - Start tracking time for a new task
+  - Inputs:
+    - `title` (string): Title/description of the task to track
+    - `workspace_id` (integer): Workspace ID (optional, uses default if not provided)
+    - `project_id` (integer): Project ID (optional)
+    - `tags` (string[]): List of tags (optional)
+
+- **stop_tracking**
+  - Stop the currently running time entry
+  - No input required
+  - Returns confirmation of stopped time entry
+
+- **list_workspaces**
+  - List all available workspaces
+  - No input required
+  - Returns list of workspaces with their IDs and names
+
+- **show_current_time_entry**
+  - Show the currently running time entry, if any
+  - No input required
+  - Returns:
+    - If tracking: Task description, entry ID, workspace, start time, running duration, tags, and project (if any)
+    - If not tracking: A message indicating no time entry is currently running
+
+### Integration with Toggl Track API
+
+This server uses the Toggl Track API v9. The following endpoints are utilized:
+
+- `GET /me` - Get user information
+- `GET /workspaces` - List workspaces
+- `GET /me/time_entries/current` - Get current running time entry
+- `POST /workspaces/{workspace_id}/time_entries` - Start time tracking
+- `PATCH /workspaces/{workspace_id}/time_entries/{time_entry_id}/stop` - Stop time tracking
 
 ## Installation
 
@@ -60,65 +96,6 @@ Add the following configuration to your MCP settings file:
 ```
 
 **Important**: Replace `/path/to/lazy-toggl-mcp` with the actual path to this project and `your-actual-api-token-here` with your real Toggl API token.
-
-## Usage
-
-Once configured, you can use the following commands with your MCP client:
-
-### Start Tracking
-```
-start_tracking title="Working on project documentation"
-```
-
-With optional parameters:
-```
-start_tracking title="Bug fix" workspace_id=12345 project_id=67890 tags=["development", "bug-fix"]
-```
-
-### Stop Tracking
-```
-stop_tracking
-```
-
-### List Workspaces
-```
-list_workspaces
-```
-
-### Show Current Time Entry
-```
-show_current_time_entry
-```
-
-This will display:
-- If tracking: Task description, entry ID, workspace, start time, running duration, tags, and project (if any)
-- If not tracking: A message indicating no time entry is currently running
-
-## API Integration
-
-This server uses the Toggl Track API v9. The following endpoints are utilized:
-
-- `GET /me` - Get user information
-- `GET /workspaces` - List workspaces
-- `GET /me/time_entries/current` - Get current running time entry
-- `POST /workspaces/{workspace_id}/time_entries` - Start time tracking
-- `PATCH /workspaces/{workspace_id}/time_entries/{time_entry_id}/stop` - Stop time tracking
-
-## Error Handling
-
-The server includes comprehensive error handling for:
-- Invalid API tokens
-- Rate limiting
-- Network errors
-- Missing or invalid time entries
-
-## Development
-
-To modify the server:
-
-1. Edit the source files in `src/toggl_server/`
-2. Reinstall the package: `uv pip install -e .`
-3. Restart your MCP client to reload the server
 
 ## Project Structure
 
