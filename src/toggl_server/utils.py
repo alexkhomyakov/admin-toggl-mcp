@@ -21,6 +21,8 @@ def parse_time_entry_response(entry_data: Dict[str, Any]) -> Dict[str, Any]:
         entry_data["start"] = datetime.fromisoformat(entry_data["start"].replace("Z", "+00:00"))
     if "stop" in entry_data and entry_data["stop"]:
         entry_data["stop"] = datetime.fromisoformat(entry_data["stop"].replace("Z", "+00:00"))
+    if "at" in entry_data and entry_data["at"]:
+        entry_data["at"] = datetime.fromisoformat(entry_data["at"].replace("Z", "+00:00"))
     
     # Handle missing fields and None values
     if entry_data.get("tags") is None:
@@ -28,14 +30,17 @@ def parse_time_entry_response(entry_data: Dict[str, Any]) -> Dict[str, Any]:
     entry_data.setdefault("tags", [])
     entry_data.setdefault("billable", False)
     entry_data.setdefault("created_with", "Lazy Toggl MCP Server")
+    entry_data.setdefault("duronly", False)
     
-    # Map API field names to our model
+    # Map API field names to our model (but keep both for compatibility)
     if "wid" in entry_data:
-        entry_data["workspace_id"] = entry_data.pop("wid")
+        entry_data["workspace_id"] = entry_data["wid"]
     if "pid" in entry_data and entry_data["pid"]:
-        entry_data["project_id"] = entry_data.pop("pid")
-    elif "pid" in entry_data:
-        entry_data.pop("pid")  # Remove None values
+        entry_data["project_id"] = entry_data["pid"]
+    if "tid" in entry_data and entry_data["tid"]:
+        entry_data["task_id"] = entry_data["tid"]
+    if "uid" in entry_data and entry_data["uid"]:
+        entry_data["user_id"] = entry_data["uid"]
     
     return entry_data
 

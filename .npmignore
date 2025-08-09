@@ -1,0 +1,76 @@
+# Development files
+.git/
+.gitignore
+.python-version
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test files
+test_*.py
+debug_*.py
+final_test.py
+test_connector.py
+test_server.py
+test_final_integration.py
+test_revenue_fix.py
+
+# Documentation
+CONNECTOR_README.md
+CONNECTOR_SETUP.md
+README.md
+FUNDING.yml
+
+# Development scripts
+install_connector.py
+uv_server.py
+standalone_server.py
+server.py
+main.py
+
+# Lock files
+uv.lock
+package-lock.json
+yarn.lock
+
+# Source maps
+*.map

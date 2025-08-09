@@ -1,0 +1,238 @@
+{
+  "name": "toggl-connector",
+  "version": "1.0.0",
+  "description": "A Claude Connector for Toggl time tracking with advanced admin-level reporting capabilities",
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/admin-toggl-mcp"
+  },
+  "connector": {
+    "name": "toggl",
+    "displayName": "Toggl Time Tracking",
+    "description": "Track time, manage projects, and get detailed analytics from Toggl",
+    "icon": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDkuNzRMMTIgMTZMMTAuOTEgOS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0iIzAwQ0NGRiIvPgo8L3N2Zz4K",
+    "entrypoint": "python",
+    "command": ["python", "connector.py"],
+    "env": {
+      "TOGGL_API_TOKEN": {
+        "description": "Your Toggl API token from https://track.toggl.com/profile",
+        "required": true,
+        "secret": true
+      }
+    },
+    "tools": [
+      {
+        "name": "start_tracking",
+        "description": "Start tracking time for a new task",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Title/description of the task"
+            },
+            "workspace_id": {
+              "type": "integer",
+              "description": "Workspace ID (optional)"
+            },
+            "project_id": {
+              "type": "integer",
+              "description": "Project ID (optional)"
+            },
+            "tags": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "List of tags (optional)"
+            }
+          },
+          "required": ["title"]
+        }
+      },
+      {
+        "name": "stop_tracking",
+        "description": "Stop the currently running time entry",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "show_current_time_entry",
+        "description": "Show the currently running time entry",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "list_workspaces",
+        "description": "List all available workspaces",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "get_organization_dashboard",
+        "description": "Get comprehensive organization dashboard with KPIs, hours, revenue, and profit metrics",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "integer",
+              "description": "Workspace ID"
+            },
+            "start_date": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "end_date": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            },
+            "period": {
+              "type": "string",
+              "enum": ["week", "month", "quarter", "year"],
+              "description": "Predefined period (optional)"
+            }
+          },
+          "required": ["workspace_id"]
+        }
+      },
+      {
+        "name": "get_project_profitability_analysis",
+        "description": "Get detailed project profitability analysis with profit margins, utilization rates, and ROI",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "integer",
+              "description": "Workspace ID"
+            },
+            "start_date": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "end_date": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            },
+            "sort_by": {
+              "type": "string",
+              "enum": ["profit", "revenue", "margin", "hours"],
+              "description": "Sort criterion"
+            },
+            "min_hours": {
+              "type": "number",
+              "description": "Minimum hours threshold for inclusion"
+            }
+          },
+          "required": ["workspace_id"]
+        }
+      },
+      {
+        "name": "get_team_productivity_report",
+        "description": "Get team productivity report with utilization rates, performance metrics, and capacity analysis",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "integer",
+              "description": "Workspace ID"
+            },
+            "start_date": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "end_date": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            },
+            "include_individual_metrics": {
+              "type": "boolean",
+              "description": "Include individual employee metrics"
+            }
+          },
+          "required": ["workspace_id"]
+        }
+      },
+      {
+        "name": "get_client_profitability_analysis",
+        "description": "Get client-level profitability and revenue analysis",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "integer",
+              "description": "Workspace ID"
+            },
+            "start_date": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "end_date": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            },
+            "min_revenue": {
+              "type": "number",
+              "description": "Minimum revenue threshold"
+            }
+          },
+          "required": ["workspace_id"]
+        }
+      },
+      {
+        "name": "get_financial_summary",
+        "description": "Get high-level financial summary with revenue, costs, and profit trends",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "integer",
+              "description": "Workspace ID"
+            },
+            "period": {
+              "type": "string",
+              "enum": ["month", "quarter", "year"],
+              "description": "Period for analysis"
+            },
+            "compare_previous": {
+              "type": "boolean",
+              "description": "Include comparison with previous period"
+            }
+          },
+          "required": ["workspace_id"]
+        }
+      },
+      {
+        "name": "get_productivity_insights",
+        "description": "Get advanced productivity insights and time tracking patterns",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "integer",
+              "description": "Workspace ID"
+            },
+            "start_date": {
+              "type": "string",
+              "description": "Start date (YYYY-MM-DD)"
+            },
+            "end_date": {
+              "type": "string",
+              "description": "End date (YYYY-MM-DD)"
+            },
+            "include_detailed_analysis": {
+              "type": "boolean",
+              "description": "Include detailed time entry analysis"
+            }
+          },
+          "required": ["workspace_id"]
+        }
+      }
+    ]
+  }
+}

@@ -2,9 +2,9 @@
 Lazy Toggl MCP Server package.
 """
 
-from .main import LazyTogglMCPServer, main
+from .main import AdminTogglServer, main
 from .toggl_api import TogglAPI, TogglAPIError
-from .models import TimeEntry, Workspace, User
+from .models import TogglTimeEntry, TogglWorkspace
 
 __version__ = "0.1.0"
-__all__ = ["LazyTogglMCPServer", "main", "TogglAPI", "TogglAPIError", "TimeEntry", "Workspace", "User"]
+__all__ = ["AdminTogglServer", "main", "TogglAPI", "TogglAPIError", "TogglTimeEntry", "TogglWorkspace"]

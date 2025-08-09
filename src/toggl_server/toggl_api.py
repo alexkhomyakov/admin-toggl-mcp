@@ -7,7 +7,7 @@ import asyncio
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 import httpx
-from toggl_server.models import TimeEntry, Workspace, User
+from toggl_server.models import TogglTimeEntry as TimeEntry, TogglWorkspace as Workspace
 from toggl_server.utils import parse_time_entry_response
 
 class TogglAPIError(Exception):
@@ -79,6 +79,8 @@ class TogglAPI:
             
         except httpx.RequestError as e:
             raise TogglAPIError(f"Network error: {str(e)}")
+        except Exception as e:
+            raise TogglAPIError(f"Unexpected error: {str(e)}")
     
     async def get_user_info(self) -> Dict[str, Any]:
         """Get current user information."""
@@ -87,7 +89,24 @@ class TogglAPI:
     async def get_workspaces(self) -> List[Workspace]:
         """Get all workspaces for the current user."""
         data = await self._request("GET", "/workspaces")
-        return [Workspace(**workspace) for workspace in data]
+        workspaces = []
+        for workspace in data:
+            # Filter out unknown fields to avoid __init__ errors
+            known_fields = {
+                'id', 'name', 'premium', 'admin', 'organization_id', 'business_ws',
+                'role', 'suspended_at', 'server_deleted_at', 'rate_last_updated',
+                'default_hourly_rate', 'default_currency', 'only_admins_may_create_projects',
+                'only_admins_see_billable_rates', 'only_admins_see_team_dashboard',
+                'projects_billable_by_default', 'rounding', 'rounding_minutes'
+            }
+            filtered_workspace = {k: v for k, v in workspace.items() if k in known_fields}
+            workspaces.append(Workspace(**filtered_workspace))
+        return workspaces
+    
+    async def get_workspace(self, workspace_id: int) -> Dict[str, Any]:
+        """Get a specific workspace by ID."""
+        data = await self._request("GET", f"/workspaces/{workspace_id}")
+        return data
     
     async def get_current_time_entry(self) -> Optional[TimeEntry]:
         """Get the currently running time entry, if any."""
@@ -97,7 +116,22 @@ class TogglAPI:
             return None
         
         entry_data = parse_time_entry_response(data)
-        return TimeEntry(**entry_data)
+        # Filter out unknown fields to avoid __init__ errors
+        known_fields = {
+            'id', 'description', 'start', 'duration', 'project_id', 'project_name',
+            'task_id', 'workspace_id', 'billable', 'tags', 'stop', 'created_with',
+            'duronly', 'at', 'uid', 'wid', 'pid', 'tid'
+        }
+        filtered_entry = {k: v for k, v in entry_data.items() if k in known_fields}
+        return TimeEntry(**filtered_entry)
+    
+    async def stop_current_time_entry(self) -> Optional[TimeEntry]:
+        """Stop the currently running time entry."""
+        current_entry = await self.get_current_time_entry()
+        if not current_entry:
+            return None
+        
+        return await self.stop_time_entry(current_entry.workspace_id, current_entry.id)
     
     async def start_time_entry(
         self,
@@ -126,11 +160,25 @@ class TogglAPI:
         data = await self._request("POST", f"/workspaces/{workspace_id}/time_entries", json=payload)
         
         entry_data = parse_time_entry_response(data)
-        return TimeEntry(**entry_data)
+        # Filter out unknown fields to avoid __init__ errors
+        known_fields = {
+            'id', 'description', 'start', 'duration', 'project_id', 'project_name',
+            'task_id', 'workspace_id', 'billable', 'tags', 'stop', 'created_with',
+            'duronly', 'at', 'uid', 'wid', 'pid', 'tid'
+        }
+        filtered_entry = {k: v for k, v in entry_data.items() if k in known_fields}
+        return TimeEntry(**filtered_entry)
     
     async def stop_time_entry(self, workspace_id: int, time_entry_id: int) -> TimeEntry:
         """Stop a running time entry."""
         data = await self._request("PATCH", f"/workspaces/{workspace_id}/time_entries/{time_entry_id}/stop")
         
         entry_data = parse_time_entry_response(data)
-        return TimeEntry(**entry_data)
+        # Filter out unknown fields to avoid __init__ errors
+        known_fields = {
+            'id', 'description', 'start', 'duration', 'project_id', 'project_name',
+            'task_id', 'workspace_id', 'billable', 'tags', 'stop', 'created_with',
+            'duronly', 'at', 'uid', 'wid', 'pid', 'tid'
+        }
+        filtered_entry = {k: v for k, v in entry_data.items() if k in known_fields}
+        return TimeEntry(**filtered_entry)

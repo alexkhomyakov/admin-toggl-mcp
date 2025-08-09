@@ -1,0 +1,47 @@
+{
+  "name": "@akhomyakov/server-toggl",
+  "version": "1.0.17",
+  "description": "MCP server for Toggl time tracking with advanced admin-level reporting capabilities",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-server-toggl": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "toggl",
+    "time-tracking",
+    "productivity",
+    "analytics"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/admin-toggl-mcp"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "connector.py",
+    "requirements.txt",
+    "src/**/*"
+  ]
+}
