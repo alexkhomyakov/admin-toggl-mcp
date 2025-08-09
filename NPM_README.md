@@ -75,7 +75,7 @@ Or use it directly with Claude Desktop by adding to your config:
 To build from source:
 
 ```bash
-git clone https://github.com/yourusername/admin-toggl-mcp
+git clone https://github.com/alexkhomyakov/admin-toggl-mcp
 cd admin-toggl-mcp
 npm install
 npm run build

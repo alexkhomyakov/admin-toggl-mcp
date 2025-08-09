@@ -25,7 +25,7 @@ rm NPM_README.md.bak
 
 # Update repository URL if needed
 echo "📝 Please update the repository URL in package.json to point to your actual GitHub repository"
-echo "   Current: https://github.com/yourusername/admin-toggl-mcp"
+echo "   Current: https://github.com/alexkhomyakov/admin-toggl-mcp"
 echo "   Update to: https://github.com/$NPM_USERNAME/admin-toggl-mcp (or your actual repo URL)"
 
 echo ""

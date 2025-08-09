@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/admin-toggl-mcp"
+    "url": "https://github.com/alexkhomyakov/admin-toggl-mcp"
   },
   "connector": {
     "name": "toggl",
