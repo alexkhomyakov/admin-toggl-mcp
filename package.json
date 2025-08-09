@@ -1,6 +1,6 @@
 {
   "name": "@akhomyakov/server-toggl",
-  "version": "1.0.17",
+  "version": "2.0.0",
   "description": "MCP server for Toggl time tracking with advanced admin-level reporting capabilities",
   "type": "module",
   "main": "dist/index.js",
@@ -21,7 +21,7 @@
     "productivity",
     "analytics"
   ],
-  "author": "Your Name",
+  "author": "Alex Khomyakov",
   "license": "MIT",
   "repository": {
     "type": "git",
