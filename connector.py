@@ -237,7 +237,8 @@ async def handle_call_tool(name: str, arguments: dict[str, any]) -> list[TextCon
                 arguments.get("end_date")
             )
             
-            result = await _get_project_profitability_analysis_local(
+            # Use the processor-based approach directly
+            result = await _get_project_profitability_analysis_with_processor(
                 admin_server, workspace_id, start_date, end_date,
                 arguments.get("sort_by", "profit"),
                 arguments.get("min_hours", 0)
@@ -728,7 +729,7 @@ async def _get_team_productivity_report_local(admin_server_instance, workspace_i
 
 """
         
-        for i, user in enumerate(users[:10], 1):
+        for i, user in enumerate(users, 1):
             result += f"""
 **{i}. {user['username']}**
    • Total Hours: {user['total_hours']:.1f}h
@@ -1171,6 +1172,118 @@ async def _get_employee_project_breakdown_local(admin_server_instance, workspace
         
     except Exception as e:
         return f"Failed to get employee project breakdown: {str(e)}"
+
+async def _get_project_profitability_analysis_with_processor(admin_server_instance, workspace_id: int, start_date: str, end_date: str, sort_by: str, min_hours: float) -> str:
+    """Get detailed project profitability analysis using the processor for accurate project names"""
+    try:
+        print("🚀 PROCESSOR-BASED ANALYSIS STARTING! 🚀", flush=True)
+        
+        # Get insights data using the processor approach
+        insights_data = await admin_server_instance.reports_api.get_insights_profitability(
+            workspace_id, start_date, end_date, "projects"
+        )
+        
+        print(f"✅ Got insights data successfully", flush=True)
+        
+        # Get workspace info for currency
+        workspace_info = await admin_server_instance.get_workspace_info(workspace_id)
+        # Handle both dict and object cases
+        if hasattr(workspace_info, 'default_currency'):
+            currency = workspace_info.default_currency
+        elif isinstance(workspace_info, dict):
+            currency = workspace_info.get('default_currency', 'USD')
+        else:
+            currency = 'USD'
+        
+        # Use the processor to get proper project data
+        projects = admin_server_instance.processor.process_project_profitability(insights_data, currency)
+        
+        print(f"Received {len(projects)} valid ProjectProfitability objects from processor")
+        
+        # Filter by minimum hours
+        if min_hours > 0:
+            filtered_projects = []
+            for p in projects:
+                try:
+                    if hasattr(p, 'total_hours'):
+                        hours = float(p.total_hours or 0)
+                    elif isinstance(p, dict):
+                        hours = float(p.get('total_hours', 0))
+                    else:
+                        continue
+                        
+                    if hours >= min_hours:
+                        filtered_projects.append(p)
+                except Exception as e:
+                    print(f"Error filtering project: {str(e)}", flush=True)
+                    continue
+                    
+            projects = filtered_projects
+            print(f"After min_hours filter ({min_hours}h): {len(projects)} projects")
+        
+        # Sort by specified criterion
+        def safe_sort_key(p, attr_name, default=0):
+            try:
+                if hasattr(p, attr_name):
+                    value = getattr(p, attr_name, default)
+                elif isinstance(p, dict):
+                    value = p.get(attr_name, default)
+                else:
+                    return default
+                return float(value or default)
+            except Exception:
+                return default
+        
+        try:
+            if sort_by == "revenue":
+                projects.sort(key=lambda p: safe_sort_key(p, 'revenue'), reverse=True)
+            elif sort_by == "margin":
+                projects.sort(key=lambda p: safe_sort_key(p, 'profit_margin'), reverse=True)
+            elif sort_by == "hours":
+                projects.sort(key=lambda p: safe_sort_key(p, 'total_hours'), reverse=True)
+            # Default is already sorted by profit
+        except Exception as e:
+            print(f"Error sorting projects by {sort_by}: {str(e)}", flush=True)
+        
+        if not projects:
+            return "No projects found matching the criteria."
+        
+        # Format output
+        result = f"""
+💰 **PROJECT PROFITABILITY ANALYSIS**
+📅 Period: {start_date} to {end_date}
+🔍 Showing {len(projects)} projects (min {min_hours}h, sorted by {sort_by})
+
+"""
+        
+        for i, project in enumerate(projects[:10], 1):
+            result += f"""
+**{i}. {project.project_name}**
+{f"   Client: {project.client_name}" if project.client_name else ""}
+   • Hours: {project.total_hours:.1f}h total, {project.billable_hours:.1f}h billable ({project.utilization_rate:.1f}% util)
+   • Revenue: {currency} {project.revenue:,.2f}
+   • Profit: {currency} {project.profit:,.2f} ({project.profit_margin:.1f}% margin)
+   • Rate: {currency} {project.billable_rate:.2f}/hour (avg)
+   • Team: {project.active_users} members, {project.time_entries_count} entries
+"""
+        
+        # Add summary stats
+        total_revenue = sum(p.revenue for p in projects)
+        total_profit = sum(p.profit for p in projects)
+        total_hours = sum(p.total_hours for p in projects)
+        
+        result += f"""
+📊 **SUMMARY STATISTICS**
+• Total Revenue: {currency} {total_revenue:,.2f}
+• Total Profit: {currency} {total_profit:,.2f}
+• Total Hours: {total_hours:.1f}h
+• Average Profit Margin: {(total_profit / total_revenue * 100) if total_revenue > 0 else 0:.1f}%
+"""
+        
+        return result
+        
+    except Exception as e:
+        return f"Failed to get project profitability analysis: {str(e)}"
 
 if __name__ == "__main__":
     asyncio.run(main())

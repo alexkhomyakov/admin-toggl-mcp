@@ -595,7 +595,7 @@ async def _get_team_productivity_report(workspace_id: int, start_date: str, end_
 
 """
         
-        for i, user in enumerate(users[:10], 1):
+        for i, user in enumerate(users, 1):
             result += f"""
 **{i}. {user.username}**
    • Total Hours: {user.total_hours:.1f}h

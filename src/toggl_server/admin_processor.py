@@ -284,7 +284,8 @@ class AdminDataProcessor:
                     entry_time_ms = time_entry.get('time', 0)
                     entry_rate = self._safe_decimal(time_entry.get('rate', 0))
                     entry_hours = self._milliseconds_to_hours(entry_time_ms)
-                    entry_cost = entry_hours * entry_rate
+                    # Convert entry_hours to Decimal to avoid float * Decimal multiplication error
+                    entry_cost = Decimal(str(entry_hours)) * entry_rate
                     labor_cost += entry_cost
                 
                 profit = revenue - labor_cost
@@ -307,25 +308,51 @@ class AdminDataProcessor:
                 logger.debug(f"Project {item.get('id')} title structure: {title_info}")
                 logger.debug(f"Project {item.get('id')} available keys: {list(item.keys())}")
                 
+                # Log problematic data structures for debugging
+                if not title_info or (isinstance(title_info, dict) and not title_info):
+                    logger.warning(f"Project {item.get('id')} has empty or missing title info: {title_info}")
+                    logger.warning(f"Available fields: {list(item.keys())}")
+                    logger.warning(f"Raw item data: {item}")
+                
                 if isinstance(title_info, dict):
                     project_name = title_info.get('project') or title_info.get('name') or 'Unknown Project'
                 elif isinstance(title_info, str):
                     project_name = title_info
                 
-                # Also try other common fields
+                # Enhanced fallback logic for project names
                 if project_name == 'Unknown Project':
-                    project_name = item.get('project', {}).get('name', 'Unknown Project') if isinstance(item.get('project'), dict) else item.get('project', 'Unknown Project')
+                    # Try multiple fallback sources
+                    fallback_sources = [
+                        item.get('project', {}).get('name') if isinstance(item.get('project'), dict) else item.get('project'),
+                        item.get('name'),
+                        item.get('project_name'),
+                        f"Project {item.get('id')}" if item.get('id') else None,  # Use ID as fallback
+                        "Unnamed Project"  # Final fallback
+                    ]
+                    
+                    for fallback in fallback_sources:
+                        if fallback and fallback != 'Unknown Project':
+                            project_name = fallback
+                            logger.info(f"Using fallback project name: {project_name} for project ID: {item.get('id')}")
+                            break
                 
-                # Extract client name with fallbacks
+                # Extract client name with enhanced fallbacks
                 client_name = None
                 if isinstance(title_info, dict):
                     client_name = title_info.get('client')
-                if not client_name and 'client' in item:
-                    client_info = item.get('client', {})
-                    if isinstance(client_info, dict):
-                        client_name = client_info.get('name')
-                    elif isinstance(client_info, str):
-                        client_name = client_info
+                
+                # Enhanced fallback logic for client names
+                if not client_name:
+                    fallback_sources = [
+                        item.get('client', {}).get('name') if isinstance(item.get('client'), dict) else item.get('client'),
+                        item.get('client_name'),
+                        "No Client"  # Final fallback
+                    ]
+                    
+                    for fallback in fallback_sources:
+                        if fallback:
+                            client_name = fallback
+                            break
                 
                 project = ProjectProfitability(
                     project_id=item.get('id', 0),
