@@ -1,6 +1,6 @@
 {
   "name": "@akhomyakov/server-toggl",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "MCP server for Toggl time tracking with advanced admin-level reporting capabilities",
   "type": "module",
   "main": "dist/index.js",
